@@ -115,7 +115,8 @@
     var steps = Array.prototype.slice.call(flow.children);
     steps.forEach(function (li) {
       li.classList.remove("on", "skip");
-      document.getElementById("f-" + li.dataset.step).textContent = values[li.dataset.step];
+      // Permite partir la línea después de cada punto: ComandoPegar. / ejecutar()
+      document.getElementById("f-" + li.dataset.step).textContent = values[li.dataset.step].replace(/\./g, ".​");
     });
     steps.forEach(function (li, i) {
       timers.push(setTimeout(function () {
