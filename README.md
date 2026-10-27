@@ -2,10 +2,11 @@
 
 Taller interactivo sobre el patrón de diseño **Command** (GoF), para la exposición de Arquitectura de software 2026-2, Universidad de Cartagena.
 
-1. **Arma el patrón**: arrastra Client, Invoker, Command, ConcreteCommand y Receiver a su lugar en el diagrama de estructura. En celular también funciona tocando la pieza y luego la caja.
-2. **Caso de uso**: el editor de texto de la presentación (Cortar, Copiar, Pegar, Deshacer), donde se ve el recorrido Invoker → Command → Receiver y la pila del historial.
-3. **Taller de preguntas**: las 8 preguntas de la diapositiva 16, con puntaje por acierto y bono por rapidez.
-4. **Ranking**: guarda nombre y puntaje.
+1. **Caso de uso**: el editor de texto de la presentación (Cortar, Copiar, Pegar, Deshacer), donde se ve el recorrido Invoker → Command → Receiver y la pila del historial.
+2. **Taller**, en dos partes que hay que completar para entrar al ranking:
+   - **Arma el patrón**: arrastra Client, Invoker, Command, ConcreteCommand y Receiver a su lugar en el diagrama de estructura. En celular también funciona tocando la pieza y luego la caja.
+   - **Preguntas**: las 8 de la diapositiva 16, con puntaje por acierto y bono por rapidez. Se habilitan al terminar el diagrama.
+3. **Ranking**: guarda nombre y puntaje.
 
 Es HTML, CSS y JavaScript sin dependencias ni compilación. Se adapta desde un iPhone SE hasta un televisor y sigue el modo claro u oscuro del sistema.
 

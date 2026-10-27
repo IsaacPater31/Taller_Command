@@ -268,6 +268,7 @@
       checkBtn.disabled = true;
       board.classList.add("locked");
       roles.hidden = false;
+      document.dispatchEvent(new CustomEvent("diagram:change"));
     } else {
       statusEl.className = "status bad";
       statusEl.textContent = wrong + (wrong === 1 ? " pieza no está" : " piezas no están") + " en su lugar. Muévelas e intenta de nuevo.";
@@ -281,6 +282,7 @@
     Score.diagramTries = 0;
     board.classList.remove("locked");
     roles.hidden = true;
+    document.dispatchEvent(new CustomEvent("diagram:change"));
     slots.forEach(function (s) { s.parentNode.classList.remove("ok", "bad"); });
     shuffle(chips).forEach(function (c) { tray.appendChild(c); });
     select(null);

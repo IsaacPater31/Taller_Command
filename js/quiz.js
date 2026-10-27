@@ -77,15 +77,23 @@
   }
 
   function intro() {
+    state = null;
+    var ready = Score.diagramDone;
     mount(el(
       '<div class="card">' +
       '<p class="q-title">8 preguntas.</p>' +
       '<p class="lead small">Cada acierto suma ' + POINTS + ' puntos. Responder rápido suma hasta ' + BONUS + ' más.</p>' +
-      '<div class="actions"><button class="btn btn-primary" data-go>Comenzar</button></div>' +
+      (ready ? '' : '<p class="note">Primero completa la parte 1: arma el diagrama.</p>') +
+      '<div class="actions"><button class="btn btn-primary" data-go' + (ready ? '' : ' disabled') + '>Comenzar</button></div>' +
       '</div>'
     ));
     root.querySelector("[data-go]").addEventListener("click", start);
   }
+
+  // Se habilita al terminar el diagrama (y se bloquea si se reinicia antes de empezar)
+  document.addEventListener("diagram:change", function () {
+    if (!state) intro();
+  });
 
   function start() {
     state = { i: 0, points: 0, right: 0, started: Date.now(), shownAt: 0 };
@@ -154,17 +162,20 @@
       '<div><b>' + state.right + '/' + QUESTIONS.length + '</b><span>Aciertos</span></div>' +
       '<div><b>' + fmt(time) + '</b><span>Tiempo</span></div>' +
       '</div>' +
-      (Score.diagramDone ? "" : '<p class="note">Aún no has armado el diagrama: vale hasta 500 puntos. <a href="#arma">Ir al paso 1</a></p>') +
-      '<form class="field" novalidate>' +
-      '<input name="name" maxlength="24" autocomplete="nickname" placeholder="Tu nombre" aria-label="Tu nombre" required>' +
-      '<button class="btn btn-primary">Guardar</button>' +
-      '</form>' +
-      '<div class="actions"><button class="btn btn-link" data-again>Repetir el taller</button></div>' +
+      (Score.diagramDone
+        ? '<form class="field" novalidate>' +
+          '<input name="name" maxlength="24" autocomplete="nickname" placeholder="Tu nombre" aria-label="Tu nombre" required>' +
+          '<button class="btn btn-primary">Guardar</button>' +
+          '</form>'
+        : '<p class="note">Para guardar en el ranking debes completar las dos partes. <a href="#arma">Ir a la parte 1</a></p>') +
+      '<div class="actions"><button class="btn btn-link" data-again>Repetir las preguntas</button></div>' +
       '</div>'
     );
     mount(card);
 
+    card.querySelector("[data-again]").addEventListener("click", start);
     var form = card.querySelector("form");
+    if (!form) return;
     var input = form.querySelector("input");
     try { input.value = localStorage.getItem("taller-command:name") || ""; } catch (e) { /* sin acceso */ }
 
@@ -195,8 +206,6 @@
         msg.textContent = "No se pudo guardar. Revisa la conexión e intenta de nuevo.";
       });
     });
-
-    card.querySelector("[data-again]").addEventListener("click", start);
   }
 
   function fmt(s) {
