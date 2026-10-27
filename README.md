@@ -23,7 +23,16 @@ En el repositorio: **Settings → Pages → Deploy from a branch → `main` / ro
 
 ## Sobre el ranking
 
-El ranking usa `localStorage`: se guarda en el navegador de cada dispositivo, sin base de datos. Sirve si todos juegan en el mismo equipo (por ejemplo, el del proyector). Para un ranking compartido entre celulares se necesita un servicio que almacene los datos (Firebase o Supabase, por ejemplo). Basta con cambiar `js/store.js`, que expone `list()`, `add()` y `clear()`.
+Sin configurar, el ranking usa `localStorage`: cada dispositivo ve solo sus puntajes.
+
+Para compartirlo entre todos los celulares se usa **Cloud Firestore** (plan gratuito Spark):
+
+1. En [console.firebase.google.com](https://console.firebase.google.com) crea un proyecto (Analytics no hace falta).
+2. **Compilación → Firestore Database → Crear base de datos**, en modo producción y en una región cercana (por ejemplo `southamerica-east1`).
+3. En la pestaña **Reglas**, pega el contenido de [`firestore.rules`](firestore.rules) y publica.
+4. **Configuración del proyecto → General → Tus apps → Web (`</>`)**: registra la app y copia `projectId` y `apiKey` en [`js/firebase-config.js`](js/firebase-config.js).
+
+La `apiKey` de Firebase no es secreta. Los datos los protegen las reglas: cualquiera puede leer y agregar un puntaje válido, pero nadie puede editar ni borrar desde la página. Para reiniciar el ranking, borra la colección `ranking` desde la consola.
 
 ## Puntaje
 

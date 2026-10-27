@@ -185,6 +185,14 @@
       }).then(function (entry) {
         form.replaceWith(el('<p class="note">Guardado. <a href="#ranking">Ver ranking</a></p>'));
         document.dispatchEvent(new CustomEvent("ranking:changed", { detail: entry.id }));
+      }).catch(function () {
+        form.querySelector("button").disabled = false;
+        var msg = form.nextElementSibling;
+        if (!msg || !msg.classList.contains("note")) {
+          msg = el('<p class="note"></p>');
+          form.after(msg);
+        }
+        msg.textContent = "No se pudo guardar. Revisa la conexión e intenta de nuevo.";
       });
     });
 
