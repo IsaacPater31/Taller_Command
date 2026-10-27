@@ -1,0 +1,178 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="color-scheme" content="light dark">
+  <meta name="theme-color" content="#ffffff" media="(prefers-color-scheme: light)">
+  <meta name="theme-color" content="#000000" media="(prefers-color-scheme: dark)">
+  <meta name="description" content="Taller interactivo del patrón de diseño Command (GoF): arma el diagrama, prueba el caso de uso y responde el taller.">
+  <title>Patrón Command</title>
+  <link rel="icon" href="assets/icon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+
+  <header class="nav">
+    <div class="nav-inner">
+      <a class="brand" href="#inicio">Command</a>
+      <nav aria-label="Secciones">
+        <a href="#arma">Arma</a>
+        <a href="#caso">Caso</a>
+        <a href="#taller">Taller</a>
+        <a href="#ranking">Ranking</a>
+      </nav>
+    </div>
+  </header>
+
+  <main>
+
+    <!-- Inicio -->
+    <section id="inicio" class="hero">
+      <div class="wrap">
+        <p class="eyebrow">Patrones GoF · Comportamiento</p>
+        <h1>Command.</h1>
+        <p class="lead">Convierte una petición en un objeto.<br>Para encolarla, registrarla o deshacerla.</p>
+        <div class="actions center">
+          <a class="btn btn-primary" href="#arma">Empezar el reto</a>
+          <a class="btn btn-link" href="#caso">Ver el caso de uso <span aria-hidden="true">›</span></a>
+        </div>
+      </div>
+    </section>
+
+    <!-- Arma el patrón -->
+    <section id="arma" class="section alt">
+      <div class="wrap">
+        <p class="eyebrow">Paso 1</p>
+        <h2>Arma el patrón.</h2>
+        <p class="lead">Arrastra cada participante a su lugar. También puedes tocarlo y luego tocar la caja.</p>
+
+        <div class="board">
+          <div class="uml" id="uml">
+            <svg class="wires" id="wires" aria-hidden="true"></svg>
+
+            <div class="box" data-area="client">
+              <div class="slot" data-answer="client" role="button" tabindex="0" aria-label="Espacio vacío"></div>
+            </div>
+
+            <div class="box" data-area="invoker">
+              <div class="slot" data-answer="invoker" role="button" tabindex="0" aria-label="Espacio vacío"></div>
+            </div>
+
+            <div class="box" data-area="command">
+              <div class="slot abstract" data-answer="command" role="button" tabindex="0" aria-label="Espacio vacío"></div>
+              <div class="part"><code><i>execute()</i></code></div>
+            </div>
+
+            <div class="box" data-area="receiver">
+              <div class="slot" data-answer="receiver" role="button" tabindex="0" aria-label="Espacio vacío"></div>
+              <div class="part"><code>action()</code></div>
+            </div>
+
+            <div class="box" data-area="concrete">
+              <div class="slot" data-answer="concrete" role="button" tabindex="0" aria-label="Espacio vacío"></div>
+              <div class="part"><code>execute()</code></div>
+              <div class="part"><code>state</code></div>
+            </div>
+          </div>
+
+          <div class="tray" id="tray" aria-label="Participantes">
+            <button class="chip" data-role="client">Client</button>
+            <button class="chip" data-role="invoker">Invoker</button>
+            <button class="chip" data-role="command">Command</button>
+            <button class="chip" data-role="concrete">Concrete<wbr>Command</button>
+            <button class="chip" data-role="receiver">Receiver</button>
+          </div>
+
+          <div class="board-foot">
+            <p class="status" id="arma-status" aria-live="polite">Faltan 5 piezas.</p>
+            <div class="actions">
+              <button class="btn btn-secondary" id="arma-reset">Reiniciar</button>
+              <button class="btn btn-primary" id="arma-check" disabled>Comprobar</button>
+            </div>
+          </div>
+        </div>
+
+        <dl class="roles" id="roles" hidden>
+          <div><dt>1 · Client</dt><dd>Crea el comando concreto y le asigna su receptor.</dd></div>
+          <div><dt>2 · Invoker</dt><dd>Llama a <code>execute()</code> sin saber qué operación se realiza.</dd></div>
+          <div><dt>3 · Command</dt><dd>Declara la interfaz: todo comando tiene <code>execute()</code>.</dd></div>
+          <div><dt>4 · ConcreteCommand</dt><dd>Une un receptor con una acción e implementa <code>execute()</code>.</dd></div>
+          <div><dt>5 · Receiver</dt><dd>Sabe hacer el trabajo real.</dd></div>
+        </dl>
+      </div>
+    </section>
+
+    <!-- Caso de uso -->
+    <section id="caso" class="section">
+      <div class="wrap">
+        <p class="eyebrow">Caso de uso</p>
+        <h2>Míralo funcionar.</h2>
+        <p class="lead">Un editor de texto. Cada botón y cada atajo es un <em>Invoker</em>. Selecciona texto y prueba.</p>
+
+        <div class="editor">
+          <div class="toolbar" role="toolbar" aria-label="Acciones del editor">
+            <button class="tool" data-cmd="cortar">Cortar</button>
+            <button class="tool" data-cmd="copiar">Copiar</button>
+            <button class="tool" data-cmd="pegar">Pegar</button>
+            <span class="sep" aria-hidden="true"></span>
+            <button class="tool" id="ed-undo">Deshacer</button>
+          </div>
+          <textarea id="ed-text" rows="3" readonly spellcheck="false" aria-label="Texto del editor">El patrón Command convierte una petición en un objeto.</textarea>
+          <p class="clip">Portapapeles: <span id="ed-clip">vacío</span></p>
+        </div>
+
+        <ol class="flow" id="flow" aria-live="polite">
+          <li data-step="invoker"><span>Invoker</span><b id="f-invoker">Botón</b></li>
+          <li data-step="command"><span>Command</span><b id="f-command">ejecutar()</b></li>
+          <li data-step="receiver"><span>Receiver</span><b id="f-receiver">Editor</b></li>
+          <li data-step="history"><span>Historial</span><b id="f-history">—</b></li>
+        </ol>
+
+        <div class="history">
+          <h3>Historial <span class="muted" id="ed-count">0</span></h3>
+          <ul id="ed-history"><li class="empty">Vacío. Corta o pega algo.</li></ul>
+        </div>
+
+        <p class="hint">En computador también funcionan <kbd>Ctrl</kbd>+<kbd>X</kbd>, <kbd>C</kbd>, <kbd>V</kbd> y <kbd>Z</kbd>: otro Invoker, mismo comando.</p>
+      </div>
+    </section>
+
+    <!-- Taller -->
+    <section id="taller" class="section alt">
+      <div class="wrap narrow">
+        <p class="eyebrow">Paso 2</p>
+        <h2>Taller de preguntas.</h2>
+        <div class="quiz" id="quiz" aria-live="polite"></div>
+      </div>
+    </section>
+
+    <!-- Ranking -->
+    <section id="ranking" class="section">
+      <div class="wrap narrow">
+        <p class="eyebrow">Ranking</p>
+        <h2>Los mejores.</h2>
+        <p class="lead small">Se guarda en este dispositivo.</p>
+        <ol class="board-list" id="board"></ol>
+        <button class="btn btn-link danger" id="board-clear" hidden>Borrar ranking</button>
+      </div>
+    </section>
+
+  </main>
+
+  <footer class="footer">
+    <div class="wrap">
+      <p>Isaac David Paternina Noble · Arquitectura de software 2026-2 · Universidad de Cartagena</p>
+      <p>Gamma, Helm, Johnson y Vlissides (1994). <i>Design Patterns</i>. Shvets (2020). <i>Sumérgete en los patrones de diseño</i>.</p>
+    </div>
+  </footer>
+
+  <script src="js/store.js"></script>
+  <script src="js/score.js"></script>
+  <script src="js/diagram.js"></script>
+  <script src="js/editor.js"></script>
+  <script src="js/quiz.js"></script>
+  <script src="js/ranking.js"></script>
+  <script src="js/nav.js"></script>
+</body>
+</html>
