@@ -5,7 +5,7 @@
   var clearBtn = document.getElementById("board-clear");
   var mine = Score.savedId;
 
-  if (Store.remote) note.textContent = "Compartido entre todos. Se actualiza solo.";
+  if (Store.remote) note.textContent = "Un solo intento. Aquí no hay deshacer.";
 
   function message(text) {
     list.innerHTML = "";
