@@ -6,7 +6,6 @@
   var tray = document.getElementById("tray");
   var statusEl = document.getElementById("arma-status");
   var checkBtn = document.getElementById("arma-check");
-  var resetBtn = document.getElementById("arma-reset");
   var roles = document.getElementById("roles");
   var slots = Array.prototype.slice.call(uml.querySelectorAll(".slot"));
   var chips = Array.prototype.slice.call(tray.querySelectorAll(".chip"));
@@ -128,7 +127,7 @@
     });
     if (!locked) {
       statusEl.className = "status";
-      statusEl.textContent = n === 5 ? "Listo. Comprueba tu diagrama." : "Faltan " + (5 - n) + (5 - n === 1 ? " pieza." : " piezas.");
+      statusEl.textContent = n === 5 ? "Listo. Revisa bien: solo hay un intento." : "Faltan " + (5 - n) + (5 - n === 1 ? " pieza." : " piezas.");
       checkBtn.disabled = n !== 5;
     }
     requestAnimationFrame(drawWires);
@@ -246,54 +245,55 @@
     if (drag && e.pointerId === drag.id) setTimeout(function () { endDrag(e, false); }, 0);
   });
 
-  /* ---------- Comprobar y reiniciar ---------- */
+  /* ---------- Comprobar (un solo intento) ---------- */
 
-  checkBtn.addEventListener("click", function () {
-    Score.diagramTries++;
-    var wrong = 0;
+  function showResult(result) {
+    locked = true;
+    board.classList.add("locked");
+    checkBtn.disabled = true;
+    checkBtn.textContent = "Comprobado";
     slots.forEach(function (s) {
-      var ok = s.querySelector(".chip").dataset.role === s.dataset.answer;
-      s.parentNode.classList.remove("ok", "bad");
-      void s.parentNode.offsetWidth; // reinicia la animación
-      s.parentNode.classList.add(ok ? "ok" : "bad");
-      if (!ok) wrong++;
+      var chip = s.querySelector(".chip");
+      s.parentNode.classList.add(chip && chip.dataset.role === s.dataset.answer ? "ok" : "bad");
     });
-
-    if (wrong === 0) {
-      locked = true;
-      Score.diagramDone = true;
-      Score.diagram = Math.max(100, 500 - (Score.diagramTries - 1) * 100);
-      statusEl.className = "status ok";
-      statusEl.textContent = "Correcto. +" + Score.diagram + " puntos.";
-      checkBtn.disabled = true;
-      board.classList.add("locked");
-      roles.hidden = false;
-      document.dispatchEvent(new CustomEvent("diagram:change"));
-    } else {
-      statusEl.className = "status bad";
-      statusEl.textContent = wrong + (wrong === 1 ? " pieza no está" : " piezas no están") + " en su lugar. Muévelas e intenta de nuevo.";
-    }
-  });
-
-  function reset() {
-    locked = false;
-    Score.diagram = 0;
-    Score.diagramDone = false;
-    Score.diagramTries = 0;
-    board.classList.remove("locked");
-    roles.hidden = true;
-    document.dispatchEvent(new CustomEvent("diagram:change"));
-    slots.forEach(function (s) { s.parentNode.classList.remove("ok", "bad"); });
-    shuffle(chips).forEach(function (c) { tray.appendChild(c); });
-    select(null);
-    update();
+    statusEl.className = "status " + (result.right === 5 ? "ok" : "bad");
+    statusEl.textContent = (result.right === 5 ? "Perfecto. " : result.right + " de 5 en su lugar. ") +
+      "+" + result.points + " puntos.";
+    roles.hidden = false;
+    requestAnimationFrame(drawWires);
   }
 
-  resetBtn.addEventListener("click", reset);
+  checkBtn.addEventListener("click", function () {
+    if (locked || placedCount() !== 5) return;
+    var placed = {};
+    var right = 0;
+    slots.forEach(function (s) {
+      var role = s.querySelector(".chip").dataset.role;
+      placed[s.dataset.answer] = role;
+      if (role === s.dataset.answer) right++;
+    });
+    var result = { placed: placed, right: right, points: right * 100 };
+    Score.diagram = result;
+    showResult(result);
+    document.dispatchEvent(new CustomEvent("diagram:change"));
+  });
+
+  // Si ya lo hizo en este dispositivo, se muestra su resultado tal cual
+  function restore(result) {
+    Object.keys(result.placed).forEach(function (answer) {
+      var slot = uml.querySelector('.slot[data-answer="' + answer + '"]');
+      var chip = tray.querySelector('.chip[data-role="' + result.placed[answer] + '"]');
+      if (slot && chip) slot.appendChild(chip);
+    });
+    update();
+    showResult(result);
+  }
 
   if ("ResizeObserver" in window) new ResizeObserver(drawWires).observe(uml);
   else window.addEventListener("resize", drawWires);
   if (document.fonts) document.fonts.ready.then(drawWires);
 
-  reset();
+  shuffle(chips).forEach(function (c) { tray.appendChild(c); });
+  if (Score.diagram) restore(Score.diagram);
+  else update();
 })();

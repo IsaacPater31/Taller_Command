@@ -3,7 +3,7 @@
   var list = document.getElementById("board");
   var note = document.getElementById("board-note");
   var clearBtn = document.getElementById("board-clear");
-  var mine = null;
+  var mine = Score.savedId;
 
   if (Store.remote) note.textContent = "Compartido entre todos. Se actualiza solo.";
 

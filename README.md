@@ -5,7 +5,7 @@ Taller interactivo sobre el patrón de diseño **Command** (GoF), para la exposi
 ## Qué tiene
 
 1. **Caso de uso**: el editor de texto de la presentación (Cortar, Copiar, Pegar, Deshacer). Se ve el recorrido Invoker → Command → Receiver y cómo se llena la pila del historial. Copiar no se apila porque no cambia el texto.
-2. **Taller**, en dos partes. Hay que completar las dos para entrar al ranking:
+2. **Taller**, en dos partes. Hay que completar las dos para entrar al ranking, y cada una tiene **un solo intento**:
    - **Parte 1 · Arma el patrón**: arrastrar Client, Invoker, Command, ConcreteCommand y Receiver a su lugar en el diagrama de estructura. En celular también funciona tocando la pieza y luego la caja.
    - **Parte 2 · Preguntas**: las 8 de la diapositiva 16, con una explicación corta después de cada respuesta. Se habilitan al terminar el diagrama.
 3. **Ranking** compartido entre todos los dispositivos, guardado en Cloud Firestore. Se actualiza solo cada 10 segundos.
@@ -16,11 +16,19 @@ Es HTML, CSS y JavaScript sin dependencias ni compilación. Se adapta desde un i
 
 | Parte | Puntos |
 | --- | --- |
-| Diagrama | 500 al primer intento, 100 menos por cada intento fallido (mínimo 100) |
+| Diagrama | 100 por cada pieza en su lugar (un solo intento, máximo 500) |
 | Cada pregunta correcta | 100 + hasta 50 por responder en menos de 20 s |
 | **Máximo** | **1700** |
 
 Si hay empate en puntos, gana quien terminó las preguntas en menos tiempo.
+
+## Un solo intento
+
+El progreso se guarda en el navegador de cada estudiante. Si recarga la página, ve su resultado del diagrama y sigue en la pregunta donde iba; no puede volver a responder ni repetir. Cada dispositivo guarda un solo puntaje en el ranking.
+
+Para reiniciar un equipo de pruebas (por ejemplo, el del proyector), abre la página con `?reiniciar` al final de la dirección.
+
+Sin inicio de sesión no se puede impedir del todo que alguien vuelva a intentarlo desde una ventana privada u otro navegador.
 
 ## Abrirlo en local
 

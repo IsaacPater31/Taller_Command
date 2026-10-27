@@ -76,13 +76,14 @@
     root.appendChild(node);
   }
 
+  function save() { Score.quiz = state; }
+
   function intro() {
-    state = null;
-    var ready = Score.diagramDone;
+    var ready = !!Score.diagram;
     mount(el(
       '<div class="card">' +
       '<p class="q-title">8 preguntas.</p>' +
-      '<p class="lead small">Cada acierto suma ' + POINTS + ' puntos. Responder rápido suma hasta ' + BONUS + ' más.</p>' +
+      '<p class="lead small">Cada acierto suma ' + POINTS + ' puntos. Responder rápido suma hasta ' + BONUS + ' más. Tienes un solo intento.</p>' +
       (ready ? '' : '<p class="note">Primero completa la parte 1: arma el diagrama.</p>') +
       '<div class="actions"><button class="btn btn-primary" data-go' + (ready ? '' : ' disabled') + '>Comenzar</button></div>' +
       '</div>'
@@ -90,14 +91,30 @@
     root.querySelector("[data-go]").addEventListener("click", start);
   }
 
-  // Se habilita al terminar el diagrama (y se bloquea si se reinicia antes de empezar)
+  // Se habilita al terminar el diagrama
   document.addEventListener("diagram:change", function () {
     if (!state) intro();
   });
 
   function start() {
-    state = { i: 0, points: 0, right: 0, started: Date.now(), shownAt: 0 };
+    if (state || !Score.diagram) return;
+    state = { i: 0, points: 0, right: 0, started: Date.now(), answered: false, finished: false };
+    save();
     ask();
+  }
+
+  function next() {
+    if (state.i === QUESTIONS.length - 1) {
+      state.finished = true;
+      state.time = Math.round((Date.now() - state.started) / 1000);
+      save();
+      finish();
+    } else {
+      state.i++;
+      state.answered = false;
+      save();
+      ask();
+    }
   }
 
   function ask() {
@@ -116,20 +133,26 @@
       '</div>'
     );
     mount(card);
-    state.shownAt = Date.now();
+    var shownAt = Date.now();
     card.querySelector(".options").addEventListener("click", function (e) {
       var btn = e.target.closest(".option");
-      if (btn) answer(card, item, +btn.dataset.k);
+      if (!btn || state.answered) return;
+      var secs = (Date.now() - shownAt) / 1000;
+      var k = +btn.dataset.k;
+      var ok = k === item.a;
+      var gained = ok ? POINTS + Math.round(BONUS * Math.max(0, 1 - secs / FAST)) : 0;
+      state.points += gained;
+      if (ok) state.right++;
+      state.answered = true;
+      state.last = { k: k, gained: gained };
+      save();
+      reveal(card, item);
     });
   }
 
-  function answer(card, item, k) {
-    var secs = (Date.now() - state.shownAt) / 1000;
+  function reveal(card, item) {
+    var k = state.last.k;
     var ok = k === item.a;
-    var gained = ok ? POINTS + Math.round(BONUS * Math.max(0, 1 - secs / FAST)) : 0;
-    state.points += gained;
-    if (ok) state.right++;
-
     card.querySelectorAll(".option").forEach(function (b, j) {
       b.disabled = true;
       if (j === item.a) b.classList.add("right");
@@ -139,41 +162,36 @@
     card.querySelector(".q-top span:last-child").textContent = state.points + " pts";
 
     var last = state.i === QUESTIONS.length - 1;
-    card.appendChild(el('<p class="explain"><strong>' + (ok ? "Correcto. +" + gained + "." : "No es esa.") + '</strong> ' + esc(item.why) + '</p>'));
+    card.appendChild(el('<p class="explain"><strong>' + (ok ? "Correcto. +" + state.last.gained + "." : "No es esa.") + '</strong> ' + esc(item.why) + '</p>'));
     var actions = el('<div class="actions"><button class="btn btn-primary">' + (last ? "Ver resultado" : "Siguiente") + '</button></div>');
     card.appendChild(actions);
-    var next = actions.querySelector("button");
-    next.focus({ preventScroll: true });
-    next.addEventListener("click", function () {
-      if (last) finish();
-      else { state.i++; ask(); }
-    });
+    var btn = actions.querySelector("button");
+    btn.focus({ preventScroll: true });
+    btn.addEventListener("click", next);
   }
 
   function finish() {
-    var time = Math.round((Date.now() - state.started) / 1000);
-    var total = state.points + Score.diagram;
+    var diagram = Score.diagram.points;
+    var total = state.points + diagram;
     var card = el(
       '<div class="card">' +
       '<p class="big">' + total + '</p>' +
       '<p class="big-label">puntos</p>' +
       '<div class="split">' +
-      '<div><b>' + Score.diagram + '</b><span>Diagrama</span></div>' +
+      '<div><b>' + diagram + '</b><span>Diagrama</span></div>' +
       '<div><b>' + state.right + '/' + QUESTIONS.length + '</b><span>Aciertos</span></div>' +
-      '<div><b>' + fmt(time) + '</b><span>Tiempo</span></div>' +
+      '<div><b>' + fmt(state.time) + '</b><span>Tiempo</span></div>' +
       '</div>' +
-      (Score.diagramDone
-        ? '<form class="field" novalidate>' +
+      (Score.savedId
+        ? '<p class="note">Tu puntaje ya está en el ranking. <a href="#ranking">Ver ranking</a></p>'
+        : '<form class="field" novalidate>' +
           '<input name="name" maxlength="24" autocomplete="nickname" placeholder="Tu nombre" aria-label="Tu nombre" required>' +
           '<button class="btn btn-primary">Guardar</button>' +
-          '</form>'
-        : '<p class="note">Para guardar en el ranking debes completar las dos partes. <a href="#arma">Ir a la parte 1</a></p>') +
-      '<div class="actions"><button class="btn btn-link" data-again>Repetir las preguntas</button></div>' +
+          '</form>') +
       '</div>'
     );
     mount(card);
 
-    card.querySelector("[data-again]").addEventListener("click", start);
     var form = card.querySelector("form");
     if (!form) return;
     var input = form.querySelector("input");
@@ -182,18 +200,19 @@
     form.addEventListener("submit", function (e) {
       e.preventDefault();
       var name = input.value.trim();
-      if (!name) { input.focus(); return; }
+      if (!name || Score.savedId) { input.focus(); return; }
       try { localStorage.setItem("taller-command:name", name); } catch (err) { /* sin acceso */ }
       form.querySelector("button").disabled = true;
       Store.add({
         name: name,
         total: total,
-        diagram: Score.diagram,
+        diagram: diagram,
         right: state.right,
         of: QUESTIONS.length,
-        time: time,
+        time: state.time,
         date: Date.now()
       }).then(function (entry) {
+        Score.savedId = entry.id;
         form.replaceWith(el('<p class="note">Guardado. <a href="#ranking">Ver ranking</a></p>'));
         document.dispatchEvent(new CustomEvent("ranking:changed", { detail: entry.id }));
       }).catch(function () {
@@ -208,11 +227,20 @@
     });
   }
 
+  // Retoma donde quedó: no se puede volver a responder ni repetir
+  function resume() {
+    state = Score.quiz;
+    if (!state) return intro();
+    if (state.finished) return finish();
+    ask();
+    if (state.answered) reveal(root.querySelector(".card"), QUESTIONS[state.i]);
+  }
+
   function fmt(s) {
     var m = Math.floor(s / 60);
     return m + ":" + String(s % 60).padStart(2, "0");
   }
 
   window.fmtTime = fmt;
-  intro();
+  resume();
 })();
