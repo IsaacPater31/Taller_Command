@@ -26,8 +26,6 @@ Si hay empate en puntos, gana quien terminó las preguntas en menos tiempo.
 
 El progreso se guarda en el navegador de cada estudiante. Si recarga la página, ve su resultado del diagrama y sigue en la pregunta donde iba; no puede volver a responder ni repetir. Cada dispositivo guarda un solo puntaje en el ranking.
 
-Para reiniciar un equipo de pruebas (por ejemplo, el del proyector), abre la página con `?reiniciar` al final de la dirección.
-
 Sin inicio de sesión no se puede impedir del todo que alguien vuelva a intentarlo desde una ventana privada u otro navegador.
 
 ## Abrirlo en local
