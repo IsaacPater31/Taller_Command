@@ -2,45 +2,66 @@
 
 Taller interactivo sobre el patrón de diseño **Command** (GoF), para la exposición de Arquitectura de software 2026-2, Universidad de Cartagena.
 
-1. **Caso de uso**: el editor de texto de la presentación (Cortar, Copiar, Pegar, Deshacer), donde se ve el recorrido Invoker → Command → Receiver y la pila del historial.
-2. **Taller**, en dos partes que hay que completar para entrar al ranking:
-   - **Arma el patrón**: arrastra Client, Invoker, Command, ConcreteCommand y Receiver a su lugar en el diagrama de estructura. En celular también funciona tocando la pieza y luego la caja.
-   - **Preguntas**: las 8 de la diapositiva 16, con puntaje por acierto y bono por rapidez. Se habilitan al terminar el diagrama.
-3. **Ranking**: guarda nombre y puntaje.
+## Qué tiene
+
+1. **Caso de uso**: el editor de texto de la presentación (Cortar, Copiar, Pegar, Deshacer). Se ve el recorrido Invoker → Command → Receiver y cómo se llena la pila del historial. Copiar no se apila porque no cambia el texto.
+2. **Taller**, en dos partes. Hay que completar las dos para entrar al ranking:
+   - **Parte 1 · Arma el patrón**: arrastrar Client, Invoker, Command, ConcreteCommand y Receiver a su lugar en el diagrama de estructura. En celular también funciona tocando la pieza y luego la caja.
+   - **Parte 2 · Preguntas**: las 8 de la diapositiva 16, con una explicación corta después de cada respuesta. Se habilitan al terminar el diagrama.
+3. **Ranking** compartido entre todos los dispositivos, guardado en Cloud Firestore. Se actualiza solo cada 10 segundos.
 
 Es HTML, CSS y JavaScript sin dependencias ni compilación. Se adapta desde un iPhone SE hasta un televisor y sigue el modo claro u oscuro del sistema.
-
-## Abrirlo
-
-Basta con abrir `index.html` en el navegador. Para servirlo localmente:
-
-```bash
-python -m http.server 5173
-```
-
-## Publicarlo en GitHub Pages
-
-En el repositorio: **Settings → Pages → Deploy from a branch → `main` / root**.
-
-## Sobre el ranking
-
-Sin configurar, el ranking usa `localStorage`: cada dispositivo ve solo sus puntajes.
-
-Para compartirlo entre todos los celulares se usa **Cloud Firestore** (plan gratuito Spark):
-
-1. En [console.firebase.google.com](https://console.firebase.google.com) crea un proyecto (Analytics no hace falta).
-2. **Compilación → Firestore Database → Crear base de datos**, en modo producción y en una región cercana (por ejemplo `southamerica-east1`).
-3. En la pestaña **Reglas**, pega el contenido de [`firestore.rules`](firestore.rules) y publica.
-4. **Configuración del proyecto → General → Tus apps → Web (`</>`)**: registra la app y copia `projectId` y `apiKey` en [`js/firebase-config.js`](js/firebase-config.js).
-
-La `apiKey` de Firebase no es secreta. Los datos los protegen las reglas: cualquiera puede leer y agregar un puntaje válido, pero nadie puede editar ni borrar desde la página. Para reiniciar el ranking, borra la colección `ranking` desde la consola.
 
 ## Puntaje
 
 | Parte | Puntos |
 | --- | --- |
 | Diagrama | 500 al primer intento, 100 menos por cada intento fallido (mínimo 100) |
-| Pregunta correcta | 100 + hasta 50 por responder en menos de 20 s |
+| Cada pregunta correcta | 100 + hasta 50 por responder en menos de 20 s |
+| **Máximo** | **1700** |
+
+Si hay empate en puntos, gana quien terminó las preguntas en menos tiempo.
+
+## Abrirlo en local
+
+```bash
+python -m http.server 5173
+```
+
+Y abrir `http://localhost:5173`. También funciona abriendo `index.html` directamente.
+
+## Publicarlo en Vercel
+
+1. Importar este repositorio en [vercel.com/new](https://vercel.com/new).
+2. **Framework Preset**: Other. Dejar vacíos **Build Command** y **Output Directory**.
+3. Desplegar. Cada `git push` a `main` vuelve a publicar el sitio.
+
+## Ranking con Firebase
+
+El ranking está conectado al proyecto de Firebase `taller-command` ([`js/firebase-config.js`](js/firebase-config.js)). La página habla con Firestore mediante su API REST, sin instalar el SDK. Si `projectId` queda vacío, el ranking se guarda solo en el navegador de cada dispositivo (`localStorage`).
+
+Para usar otro proyecto:
+
+1. En [console.firebase.google.com](https://console.firebase.google.com) crear un proyecto.
+2. **Compilación → Firestore Database → Crear base de datos**, en modo producción.
+3. En la pestaña **Reglas**, pegar el contenido de [`firestore.rules`](firestore.rules) y publicar.
+4. **Configuración del proyecto → General → Tus apps → Web (`</>`)**: registrar la app y copiar `projectId` y `apiKey` en `js/firebase-config.js`.
+
+La `apiKey` de Firebase no es secreta. Los datos los protegen las reglas: cualquiera puede leer y agregar un puntaje válido (nombre de hasta 24 caracteres, máximo 1700 puntos), pero nadie puede editar ni borrar desde la página. Para reiniciar el ranking entre grupos, borrar la colección `ranking` desde la consola de Firebase.
+
+## Archivos
+
+```
+index.html             Página única
+css/styles.css         Estilos
+js/editor.js           Caso de uso (Receiver, comandos, historial)
+js/diagram.js          Parte 1: arrastrar al diagrama
+js/quiz.js             Parte 2: preguntas y resultado
+js/ranking.js          Lista del ranking
+js/store.js            Guardado: Firestore o localStorage
+js/firebase-config.js  Datos del proyecto de Firebase
+firestore.rules        Reglas de seguridad de Firestore
+```
 
 ## Referencias
 
