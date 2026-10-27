@@ -8,6 +8,6 @@
  * los datos son las reglas de firestore.rules.
  */
 window.FIREBASE = {
-  projectId: "",
-  apiKey: ""
+  projectId: "taller-command",
+  apiKey: "AIzaSyDLAr6H2ZM70kzlOsZpyad3VxA8XqouXQk"
 };
